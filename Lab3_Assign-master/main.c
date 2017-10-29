@@ -152,6 +152,13 @@ int main(void)
 //            doesn't care about when specifically the timer A0 is cycling, no interrupts from it or its CCRs are needed.
 //          We can initially drive them with a 100% duty cycle for testing; the UART commands can easily change the duty cycle on their own
 //        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ENTER CODE FOR LAB3 RC_RGB init HERE:
+ // Initialize CCRS
+        Timer_A_initCompare(TIMER_A0_BASE, A0_CCR0);
+
+        Timer_A_initCompare(TIMER_A0_BASE, A0_CCR1);
+
+        Timer_A_initCompare(TIMER_A0_BASE, A0_CCR2)
+         
     GPIO_setAsOutputPin(GPIO_PORT_P2, GPIO_PIN0 + GPIO_PIN1 + GPIO_PIN2);
 
 //        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ End CODE FOR LAB3 RC_RGB init
