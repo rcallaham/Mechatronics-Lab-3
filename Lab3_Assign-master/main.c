@@ -225,7 +225,7 @@ extern void EUSCIA0_IRQHandler(void)
             }
         }
 
-        if (readdata == 'r' || readdata == 'g' || readdata == 'b')
+        if (readdata == 'r')
         {
             uint8_t i;
             for (i = 0; i < 3; i++)
@@ -233,6 +233,13 @@ extern void EUSCIA0_IRQHandler(void)
                 atoi(readdata, i);
             }
         }
+     else if(readdata == 'g')
+     {
+      
+     }
+     else if(readdata == 'b')
+     {
+     }
         else if (readdata == 's')
         {
             startStopStopwatch(false);
