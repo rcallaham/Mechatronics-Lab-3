@@ -52,8 +52,46 @@ EUSCI_A_UART_CLOCKSOURCE_SMCLK,          // SMCLK Clock Source
         EUSCI_A_UART_OVERSAMPLING_BAUDRATE_GENERATION  // Oversampling
         };
 // Timer_A for driving RGB LED via PWM
+Timer_A_UpModeConfig A0_PWM =
+{
+     TIMER_A_CLOCKSOURCE_SMCLK, // Usually DCO clock, which in this case we set to 12MHz in main()
+     TIMER_A_CLOCKSOURCE_DIVIDER_1,
+     256, //10ms Debounce Delay
+     TIMER_A_TAIE_INTERRUPT_ENABLE, // Should Timer_A send interrupts to Processor *at all*
+     TIMER_A_CCIE_CCR0_INTERRUPT_ENABLE, // Should Timer_A reaching its period value (stored in CCR0) trigger an interrupt?
+     TIMER_A_DO_CLEAR
+};
 
 // All 3 CCR configs for the 3 pins of the RGB LED
+
+//CCR1
+
+Timer_A_CompareModeConfig A0_CCR0 =
+{
+ TIMER_A_CAPTURECOMPARE_REGISTER_1,
+ TIMER_A_CAPTURECOMPARE_INTERRUPT_ENABL,
+ TIMER_A_OUTPUTMODE_OUTBITVALUE,
+256  // 100% duty cycle
+ };
+
+//CR2
+Timer_A_CompareModeConfig A0_CCR1 =
+{
+ TIMER_A_CAPTURECOMPARE_REGISTER_2,
+ TIMER_A_CAPTURECOMPARE_INTERRUPT_ENABL,
+ Timer_A_OUTPUTMODE_OUTBITVALUE,
+ 127        //25% duty cycle
+};
+
+//CCR3
+Timer_A_CompareModeConfig A0_CCR2 =
+{
+ TIMER_A_CAPTURECOMPARE_REGISTER_3,
+ TIMER_A_CAPTURECOMPARE_INTERRUPT_ENABL,
+ Timer_A_OutputMODE_OUTBITVALUE,
+ 64     //75% duty cycle
+};
+
 
 // PROVIDED: Timer_A struct for our debounce timer, triggering its interrupt when it hits its period value in CCR0
 Timer_A_UpModeConfig debounce_Config = {
