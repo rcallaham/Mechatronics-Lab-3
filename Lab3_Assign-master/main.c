@@ -33,9 +33,24 @@
 #include <stdbool.h>
 #include "printf.h"
 
+int MAX_DUTY_CYCLE = 255;
+static volatile uint8_t readdata;
+int debounceDelay = 3000;
+int debounced = 0;
+
 // TODO: Lab3: create UART, Timer_A, and CCR config structures ~~~~~~~~~~
 // UART config
-
+const eUSCI_UART_Config uartConfig = {
+EUSCI_A_UART_CLOCKSOURCE_SMCLK,          // SMCLK Clock Source
+        78,                                     // BRDIV = 78
+        2,                                       // UCxBRF = 2
+        0,                                       // UCxBRS = 0
+        EUSCI_A_UART_NO_PARITY,                  // No Parity
+        EUSCI_A_UART_LSB_FIRST,                  // LSB First
+        EUSCI_A_UART_ONE_STOP_BIT,               // One stop bit
+        EUSCI_A_UART_MODE,                       // UART mode
+        EUSCI_A_UART_OVERSAMPLING_BAUDRATE_GENERATION  // Oversampling
+        };
 // Timer_A for driving RGB LED via PWM
 
 // All 3 CCR configs for the 3 pins of the RGB LED
@@ -88,6 +103,7 @@ int main(void)
 //            doesn't care about when specifically the timer A0 is cycling, no interrupts from it or its CCRs are needed.
 //          We can initially drive them with a 100% duty cycle for testing; the UART commands can easily change the duty cycle on their own
 //        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ENTER CODE FOR LAB3 RC_RGB init HERE:
+    GPIO_setAsOutputPin(GPIO_PORT_P2, GPIO_PIN0 + GPIO_PIN1 + GPIO_PIN2);
 
 //        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ End CODE FOR LAB3 RC_RGB init
 
@@ -116,7 +132,8 @@ static void startStopStopwatch(bool restart)
 // TODO: Lab3: Sample current stopwatch value, convert to number of elapsed milliseconds, and transmit to computer
 void stopwatchSample()
 {
-
+    uint32_t watchTime = Timer32_getValue(TIMER32_0_BASE);
+    MAP_UART_transmitData(EUSCI_A0_BASE, (INT32_MAX - watchTime) / 3000000);
 }
 // END Sample Stopwatch code ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -140,16 +157,77 @@ extern void EUSCIA0_IRQHandler(void)
 //    also tracks parsing state (most recently seen letter, and numeric characters in current number) to understand
 //          the relevant multicharacter commands, as per spec
 
+     uint32_t status = MAP_UART_getEnabledInterruptStatus(EUSCI_A0_BASE);
+
+    MAP_UART_clearInterruptFlag(EUSCI_A0_BASE, status);
+
+    if (status & EUSCI_A_UART_RECEIVE_INTERRUPT_FLAG)
+    {
+        readdata = MAP_UART_receiveData(EUSCI_A0_BASE);
+
+        // Toggle Red LED if the character received is an "L":
+        if (readdata == 76)
+        {
+            MAP_GPIO_toggleOutputOnPin(GPIO_PORT_P1, GPIO_PIN0);
+
+            const char mytext[] = "Toggle LED\n\r";
+            int ichar;
+            for (ichar = 0; ichar < 12; ichar++)
+            {
+                MAP_UART_transmitData(EUSCI_A0_BASE, mytext[ichar]);
+            }
+        }
+
+        if (readdata == 'r' || readdata == 'g' || readdata == 'b')
+        {
+            uint8_t i;
+            for (i = 0; i < 3; i++)
+            {
+                atoi(readdata, i);
+            }
+        }
+        else if (readdata == 's')
+        {
+            startStopStopwatch(false);
+        }
+        else if (readdata == '!')
+        {
+            startStopStopwatch(true);
+        }
+        else if (readdata == 'p')
+        {
+            stopwatchSample();
+        }
+        else
+        {
+            MAP_UART_transmitData(EUSCI_A0_BASE, '.' + readdata + '.\n');
+        }
+    }
+}
 //    END LAB3 UART COMMAND LOGIC ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 }
 
 // TODO: Lab3: Button Interrupt, Debounce Interrupt, and Stopwatch Interrupt ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 extern void PORT1_IRQHandler()
 {
+    //debouncing logic
+    if (debounced == 1)
+    {
+        MAP_GPIO_clearInterruptFlag(GPIO_PORT_P1, GPIO_PIN4);
+        return;
+    }
+
+    debounced = 1;
+    TimerA_startTimer(TIMER_A0_BASE, 1);
+
+    //get pin
     uint32_t status;
     status = MAP_GPIO_getEnabledInterruptStatus(GPIO_PORT_P1);
-    if (status & GPIO_PIN4){
+    MAP_GPIO_clearInterruptFlag(GPIO_PORT_P1, GPIO_PIN4);
 
+    if (status & GPIO_PIN4)
+    {
+        stopwatchSample();
     }
 }
 
@@ -157,6 +235,11 @@ extern void TA2_0_IRQHandler()
 {
 //      Debounce Interrupt: Clears our debouncing flag so we listen to future button interrupts again, and
 //          prevents TA2 from cycling again like it normally would.
+ 
+     //reset debounced to zero, allowing new button presses
+    debounced = 0;
+    // clear interrupt flag
+    Timer_A_clearInterruptFlag(TIMER_A0_BASE);
 }
 
 extern void T32_INT0_IRQHandler()
