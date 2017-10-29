@@ -170,7 +170,24 @@ MAP_UART_initModule(EUSCI_A0_BASE, &uartConfig);
 static void startStopStopwatch(bool restart)
 {
 
+ if(restart) //if ! is called, restart the imer
+ {
+     Timer32_haltTimer(TIMER32_0_BASE); //stops timer
+     Timer32_setCount(TIMER32_0_BASE, UINT32_MAX); //resets timer
+     timerRunning = 1;      //resets timer running variable
+ }
+ else if (timerRunning)    // is timer running
+ {
+     Timer32_haltTimer(TIMER32_0_BASE);   //stop timer
+ }
+ else //timer is not running
+ { 
+     Timer32_startTimer(TIMER32_0_BASE,0); //strt timer
+ }
+
+ timerRunning = !timerRunning; //toggle timer running state
 }
+
 // END Stopwatch State Helper Function Definition ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 // Helper function for sampling stopwatch. This avoids code duplication between UART and button sampling
