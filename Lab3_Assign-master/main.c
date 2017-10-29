@@ -57,31 +57,24 @@ EUSCI_A_UART_CLOCKSOURCE_SMCLK,          // SMCLK Clock Source
 
 //CCR1
 
-Timer_A_CompareModeConfig A0_CCR1 =
-{
- TIMER_A_CAPTURECOMPARE_REGISTER_1,
- TIMER_A_CAPTURECOMPARE_INTERRUPT_ENABL,
- TIMER_A_OUTPUTMODE_OUTBITVALUE,
-256  // 100% duty cycle
- };
+const Timer_A_CompareModeConfig A0_CCR0 = {
+        TIMER_A_CAPTURECOMPARE_REGISTER_1,
+        TIMER_A_CAPTURECOMPARE_INTERRUPT_ENABLE,
+        TIMER_A_OUTPUTMODE_OUTBITVALUE, 255 };
 
 //CR2
-Timer_A_CompareModeConfig A0_CCR2 =
-{
- TIMER_A_CAPTURECOMPARE_REGISTER_2,
- TIMER_A_CAPTURECOMPARE_INTERRUPT_ENABL,
- Timer_A_OUTPUTMODE_OUTBITVALUE,
- 127        //25% duty cycle
-};
+const Timer_A_CompareModeConfig A0_CCR1 = {
+        TIMER_A_CAPTURECOMPARE_REGISTER_2,
+        TIMER_A_CAPTURECOMPARE_INTERRUPT_ENABLE,
+        TIMER_A_OUTPUTMODE_OUTBITVALUE, 255     //25% duty cycle
+        };
 
 //CCR3
-Timer_A_CompareModeConfig A0_CCR3 =
-{
- TIMER_A_CAPTURECOMPARE_REGISTER_3,
- TIMER_A_CAPTURECOMPARE_INTERRUPT_ENABL,
- Timer_A_OutputMODE_OUTBITVALUE,
- 64     //75% duty cycle
-};
+const Timer_A_CompareModeConfig A0_CCR2 = {
+        TIMER_A_CAPTURECOMPARE_REGISTER_3,
+        TIMER_A_CAPTURECOMPARE_INTERRUPT_ENABLE,
+        TIMER_A_OUTPUTMODE_OUTBITVALUE, 255 //75% duty cycle
+        };
 
 
 // PROVIDED: Timer_A struct for our debounce timer, triggering its interrupt when it hits its period value in CCR0
@@ -117,14 +110,23 @@ int main(void)
 
 //      TODO: LAB3: UART module needs to be configured to both transmit and receive. How it reacts to specific commands is elsewhere
 //        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ENTER CODE FOR LAB3 UART init HERE:
-
+MAP_UART_initModule(EUSCI_A0_BASE, &uartConfig);
+    MAP_UART_enableModule(EUSCI_A0_BASE);
+    MAP_UART_enable_Interrupt(EUSCI_A0_BASE, EUSCI_A_UART_RECEIVE_INTERRUPT);
+    MAP_Interrupt_enableInterrupt(INT_EUSCIA0);
+    MAP_Interrupt_enableSleepOnISRExit();
+    MAP_Interrupt_enableMaster();
 //        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ End CODE FOR LAB3 UART init
 
 //      TODO: LAB3: Configure the Stopwatch (TIMER32_0) and button input (Port1) according to spec.
 //           Configure Timer_A2 for debouncing, using its interrupt to prevent it from cycling forever.
 //            (Struct for Timer A2 is provided, such that when it hits its CCR0 an interrupt is triggered
 //          Start with the stopwatch paused, so it only starts actually counting in response to the relevant UART commands
-     
+     Timer32_initModule(TIMER32_1_BASE, TIMER32_PRESCALER_1, TIMER32_32BIT,
+    TIMER32_PERIODIC_MODE);
+    Timer32_clearInterruptFlag(TIMER32_1_BASE);
+    Timer32_enableInterrupt(TIMER32_1_BASE);
+    MAP_Interrupt_enableInterrupt(TIMER32_1_INTERRUPT);
  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ENTER CODE FOR LAB3 stopwatch init HERE:
  
 //           Configure Timer_A2 for debouncing, using its interrupt to prevent it from cycling forever.
@@ -132,11 +134,7 @@ int main(void)
 //          Start with the stopwatch paused, so it only starts actually counting in response to the relevant UART commands
 
  //        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ENTER CODE FOR LAB3 stopwatch init HERE:
-    Timer32_initModule(TIMER32_1_BASE, TIMER32_PRESCALER_1, TIMER32_32BIT,
-        TIMER32_PERIODIC_MODE);
-        Timer32_clearInterruptFlag(TIMER32_1_BASE);
-        Timer32_enableInterrupt(TIMER32_1_BASE);
-        MAP_Interrupt_enableInterrupt(TIMER32_1_INTERRUPT);
+
 //        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ End CODE FOR LAB3 stopwatch init
 
 //          TODO: LAB3, Part 2: Prepare RGB LED driven by PWM signals driven by TIMER_A0 with multiple CCRs. Note that because the processor
@@ -144,11 +142,11 @@ int main(void)
 //          We can initially drive them with a 100% duty cycle for testing; the UART commands can easily change the duty cycle on their own
 //        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ENTER CODE FOR LAB3 RC_RGB init HERE:
  // Initialize CCRS
-        Timer_A_initCompare(TIMER_A0_BASE, A0_CCR0);
+        Timer_A_initCompare(TIMER_A0_BASE, &A0_CCR0);
 
-        Timer_A_initCompare(TIMER_A0_BASE, A0_CCR1);
+        Timer_A_initCompare(TIMER_A0_BASE, &A0_CCR1);
 
-        Timer_A_initCompare(TIMER_A0_BASE, A0_CCR2)
+        Timer_A_initCompare(TIMER_A0_BASE, &A0_CCR2)
          
     GPIO_setAsOutputPin(GPIO_PORT_P2, GPIO_PIN0 + GPIO_PIN1 + GPIO_PIN2);
 
@@ -212,18 +210,18 @@ extern void EUSCIA0_IRQHandler(void)
     {
         readdata = MAP_UART_receiveData(EUSCI_A0_BASE);
 
-        // Toggle Red LED if the character received is an "L":
-        if (readdata == 76)
-        {
-            MAP_GPIO_toggleOutputOnPin(GPIO_PORT_P1, GPIO_PIN0);
+//         // Toggle Red LED if the character received is an "L":
+//         if (readdata == 76)
+//         {
+//             MAP_GPIO_toggleOutputOnPin(GPIO_PORT_P1, GPIO_PIN0);
 
-            const char mytext[] = "Toggle LED\n\r";
-            int ichar;
-            for (ichar = 0; ichar < 12; ichar++)
-            {
-                MAP_UART_transmitData(EUSCI_A0_BASE, mytext[ichar]);
-            }
-        }
+//             const char mytext[] = "Toggle LED\n\r";
+//             int ichar;
+//             for (ichar = 0; ichar < 12; ichar++)
+//             {
+//                 MAP_UART_transmitData(EUSCI_A0_BASE, mytext[ichar]);
+//             }
+//         }
 
         if (readdata == 'r')
         {
