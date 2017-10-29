@@ -52,21 +52,12 @@ EUSCI_A_UART_CLOCKSOURCE_SMCLK,          // SMCLK Clock Source
         EUSCI_A_UART_OVERSAMPLING_BAUDRATE_GENERATION  // Oversampling
         };
 // Timer_A for driving RGB LED via PWM
-Timer_A_UpModeConfig A0_PWM =
-{
-     TIMER_A_CLOCKSOURCE_SMCLK, // Usually DCO clock, which in this case we set to 12MHz in main()
-     TIMER_A_CLOCKSOURCE_DIVIDER_1,
-     256, //based on example slides. equal to CCR0
-     TIMER_A_TAIE_INTERRUPT_ENABLE, // Should Timer_A send interrupts to Processor *at all*
-     TIMER_A_CCIE_CCR0_INTERRUPT_ENABLE, // Should Timer_A reaching its period value (stored in CCR0) trigger an interrupt?
-     TIMER_A_DO_CLEAR
-};
 
 // All 3 CCR configs for the 3 pins of the RGB LED
 
 //CCR1
 
-Timer_A_CompareModeConfig A0_CCR0 =
+Timer_A_CompareModeConfig A0_CCR1 =
 {
  TIMER_A_CAPTURECOMPARE_REGISTER_1,
  TIMER_A_CAPTURECOMPARE_INTERRUPT_ENABL,
@@ -75,7 +66,7 @@ Timer_A_CompareModeConfig A0_CCR0 =
  };
 
 //CR2
-Timer_A_CompareModeConfig A0_CCR1 =
+Timer_A_CompareModeConfig A0_CCR2 =
 {
  TIMER_A_CAPTURECOMPARE_REGISTER_2,
  TIMER_A_CAPTURECOMPARE_INTERRUPT_ENABL,
@@ -84,7 +75,7 @@ Timer_A_CompareModeConfig A0_CCR1 =
 };
 
 //CCR3
-Timer_A_CompareModeConfig A0_CCR2 =
+Timer_A_CompareModeConfig A0_CCR3 =
 {
  TIMER_A_CAPTURECOMPARE_REGISTER_3,
  TIMER_A_CAPTURECOMPARE_INTERRUPT_ENABL,
