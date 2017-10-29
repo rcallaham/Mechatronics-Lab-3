@@ -225,18 +225,34 @@ extern void EUSCIA0_IRQHandler(void)
 
         if (readdata == 'r')
         {
+         uint8_T volatile red_duty;
             uint8_t i;
             for (i = 0; i < 3; i++)
             {
-                atoi(readdata, i);
+             
+                red_duty =atoi(readdata, i);
             }
+         Timer_A_SetCompareValue(TIMER_A0_BASE,TIMER_A_CAPTURECOMPARE_REGISTER_1,red_duty);
         }
      else if(readdata == 'g')
      {
-      
+      uint8_t volatile green_duty;
+       uint8_t i;
+            for (i = 0; i < 3; i++)
+            {
+                green_duty =atoi(readdata, i);
+            }
+      Timer_A_SetCompareValue(TIMER_A0_BASE,TIMER_A_CAPTURECOMPARE_REGISTER_2,green_duty);
      }
      else if(readdata == 'b')
      {
+      unint8_t volatile blue_duty;
+        uint8_t i;
+            for (i = 0; i < 3; i++)
+            {
+                blue_duty =atoi(readdata, i);
+            }
+      Timer_A_SetCompareValue(TIMER_A0_BASE,TIMER_A_CAPTURECOMPARE_REGISTER_3,blue_duty);
      }
         else if (readdata == 's')
         {
