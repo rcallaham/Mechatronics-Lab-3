@@ -56,7 +56,7 @@ Timer_A_UpModeConfig A0_PWM =
 {
      TIMER_A_CLOCKSOURCE_SMCLK, // Usually DCO clock, which in this case we set to 12MHz in main()
      TIMER_A_CLOCKSOURCE_DIVIDER_1,
-     256, //10ms Debounce Delay
+     256, //based on example slides. equal to CCR0
      TIMER_A_TAIE_INTERRUPT_ENABLE, // Should Timer_A send interrupts to Processor *at all*
      TIMER_A_CCIE_CCR0_INTERRUPT_ENABLE, // Should Timer_A reaching its period value (stored in CCR0) trigger an interrupt?
      TIMER_A_DO_CLEAR
