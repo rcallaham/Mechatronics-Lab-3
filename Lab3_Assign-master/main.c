@@ -95,8 +95,19 @@ int main(void)
 //           Configure Timer_A2 for debouncing, using its interrupt to prevent it from cycling forever.
 //            (Struct for Timer A2 is provided, such that when it hits its CCR0 an interrupt is triggered
 //          Start with the stopwatch paused, so it only starts actually counting in response to the relevant UART commands
-//        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ENTER CODE FOR LAB3 stopwatch init HERE:
+     
+ //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ENTER CODE FOR LAB3 stopwatch init HERE:
+ 
+//           Configure Timer_A2 for debouncing, using its interrupt to prevent it from cycling forever.
+//            (Struct for Timer A2 is provided, such that when it hits its CCR0 an interrupt is triggered
+//          Start with the stopwatch paused, so it only starts actually counting in response to the relevant UART commands
 
+ //        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ENTER CODE FOR LAB3 stopwatch init HERE:
+    Timer32_initModule(TIMER32_1_BASE, TIMER32_PRESCALER_1, TIMER32_32BIT,
+        TIMER32_PERIODIC_MODE);
+        Timer32_clearInterruptFlag(TIMER32_1_BASE);
+        Timer32_enableInterrupt(TIMER32_1_BASE);
+        MAP_Interrupt_enableInterrupt(TIMER32_1_INTERRUPT);
 //        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ End CODE FOR LAB3 stopwatch init
 
 //          TODO: LAB3, Part 2: Prepare RGB LED driven by PWM signals driven by TIMER_A0 with multiple CCRs. Note that because the processor
