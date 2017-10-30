@@ -37,6 +37,7 @@ int MAX_DUTY_CYCLE = 255;
 static volatile uint8_t readdata;
 int debounceDelay = 3000;
 int debounced = 0;
+bool timerRunning = 0;
 
 // TODO: Lab3: create UART, Timer_A, and CCR config structures ~~~~~~~~~~
 // UART config
